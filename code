@@ -1,0 +1,187 @@
+
+
+from ucimlrepo import fetch_ucirepo
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import VotingClassifier
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+import matplotlib.pyplot as plt
+
+# fetch dataset
+national_health_and_nutrition_health_survey_2013_2014_nhanes_age_prediction_subset = fetch_ucirepo(id=887)
+X = national_health_and_nutrition_health_survey_2013_2014_nhanes_age_prediction_subset.data.features
+y = national_health_and_nutrition_health_survey_2013_2014_nhanes_age_prediction_subset.data.targets
+
+# Convert y to numpy array and then flatten it
+y = y.to_numpy().ravel()
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Logistic Regression
+model = LogisticRegression(max_iter=1000)
+model.fit(X_train, y_train)
+y_pred = model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print("Logistic Regression Accuracy:", accuracy)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+
+# Support Vector Machine (SVM)
+model2 = SVC()
+model2.fit(X_train, y_train)
+y_pred2 = model2.predict(X_test)
+accuracy2 = accuracy_score(y_test, y_pred2)
+print("\nSVM Accuracy:", accuracy2)
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred2))
+print("\nConfusion Matrix:")
+print(confusion_matrix(y_test, y_pred2))
+
+# Random Forest
+rf_model = RandomForestClassifier()
+rf_model.fit(X_train, y_train)
+rf_y_pred = rf_model.predict(X_test)
+rf_accuracy = accuracy_score(y_test, rf_y_pred)
+print("\nRandom Forest Accuracy:", rf_accuracy)
+print("\nRandom Forest Classification Report:")
+print(classification_report(y_test, rf_y_pred))
+print("\nRandom Forest Confusion Matrix:")
+print(confusion_matrix(y_test, rf_y_pred))
+
+# Gradient Boosting
+gb_model = GradientBoostingClassifier()
+gb_model.fit(X_train, y_train)
+gb_y_pred = gb_model.predict(X_test)
+gb_accuracy = accuracy_score(y_test, gb_y_pred)
+print("\nGradient Boosting Accuracy:", gb_accuracy)
+print("\nGradient Boosting Classification Report:")
+print(classification_report(y_test, gb_y_pred))
+print("\nGradient Boosting Confusion Matrix:")
+print(confusion_matrix(y_test, gb_y_pred))
+
+# K-Nearest Neighbors (KNN)
+knn_model = KNeighborsClassifier()
+knn_model.fit(X_train, y_train)
+knn_y_pred = knn_model.predict(X_test)
+knn_accuracy = accuracy_score(y_test, knn_y_pred)
+print("\nK-Nearest Neighbors Accuracy:", knn_accuracy)
+print("\nK-Nearest Neighbors Classification Report:")
+print(classification_report(y_test, knn_y_pred))
+print("\nK-Nearest Neighbors Confusion Matrix:")
+print(confusion_matrix(y_test, knn_y_pred))
+
+# Weighted Ensemble Model
+base_model1 = LogisticRegression()
+base_model2 = RandomForestClassifier()
+base_model3 = GradientBoostingClassifier()
+base_model4 = KNeighborsClassifier()
+
+weights = [0.25, 0.25, 0.25, 0.25]
+estimators = [('logistic', base_model1), ('random_forest', base_model2), ('gradient_boosting', base_model3), ('knn', base_model4)]
+weighted_model = VotingClassifier(estimators=estimators, voting='soft', weights=weights)
+weighted_model.fit(X_train, y_train)
+weighted_y_pred = weighted_model.predict(X_test)
+weighted_accuracy = accuracy_score(y_test, weighted_y_pred)
+print("\nWeighted Ensemble Model Accuracy:", weighted_accuracy)
+print("\nWeighted Ensemble Model Classification Report:")
+print(classification_report(y_test, weighted_y_pred))
+print("\nWeighted Ensemble Model Confusion Matrix:")
+print(confusion_matrix(y_test, weighted_y_pred))
+
+
+
+# Create lists to store the classifier names and their accuracy scores
+classifier_names = ['Logistic Regression', 'SVM', 'Random Forest', 'Gradient Boosting', 'KNN', 'Weighted Ensemble Model']
+accuracies = [accuracy, accuracy2, rf_accuracy, gb_accuracy, knn_accuracy, weighted_accuracy]
+
+# Create a bar chart
+plt.bar(classifier_names, accuracies, color='blue')
+plt.title('Classifier Accuracy Scores')
+plt.xlabel('Classifier')
+plt.ylabel('Accuracy')
+plt.show()
+
+
+import pandas as pd
+
+classifiers = ['Logistic Regression', 'SVM', 'Random Forest', 'Gradient Boosting', 'KNN', 'Weighted Ensemble Model']
+accuracies = [accuracy, accuracy2, rf_accuracy, gb_accuracy, knn_accuracy, weighted_accuracy]
+
+# Create a DataFrame
+results_df = pd.DataFrame(list(zip(classifiers, accuracies)), columns=['Classifier', 'Accuracy'])
+
+# Display the table
+print(results_df.to_string(index=False))
+
+
+
+import pydot
+
+def simple_function():
+    x = 1
+    y = 2
+    if x + y > 3:
+        return "Result is greater than 3"
+    else:
+        return "Result is not greater than 3"
+
+def create_flowchart(func):
+    """Create a flowchart of the given function using pydot."""
+    graph = pydot.Dot(graph_type='digraph')
+    nodes = {}
+
+    # Add nodes for each basic block
+    for block in func.body:
+        if isinstance(block, pydot.Node):
+            bb_name = block.get_name()
+            nodes[bb_name] = block
+        elif isinstance(block, pydot.Edge):
+            continue
+
+    # Add nodes for each statement
+    for block in func.body:
+        if not isinstance(block, pydot.Node):
+            continue
+
+        stmt_name = str(block)
+        nodes[stmt_name] = pydot.Node(stmt_name)
+
+        # Add edges for control flow
+        if block.conditions:
+            for condition, target in block.conditions:
+                edge = pydot.Edge(block, nodes[str(target)])
+                edge.set_label(condition)
+                graph.add_edge(edge)
+
+        # Add edges for fall-through
+        if block.next:
+            edge = pydot.Edge(block, nodes[str(block.next)])
+            graph.add_edge(edge)
+
+    # Add source and sink nodes
+    entry_node = pydot.Node("entry")
+    exit_node = pydot.Node("exit")
+
+    graph.add_node(entry_node)
+    graph.add_node(exit_node)
+
+    for block in func.body:
+        if isinstance(block, pydot.Node):
+            if block.preds:
+                graph.add_edge(pydot.Edge(entry_node, block))
+            if block.succs:
+                graph.add_edge(pydot.Edge(block, exit_node))
+
+    return graph
+
+# Create a flowchart of simple_function
+graph = create_flowchart(simple_function.__code__)
+
+# Save the flowchart to a file
+graph.write_png("flowchart.png")
